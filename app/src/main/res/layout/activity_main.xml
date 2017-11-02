@@ -1,25 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
 
+    android:background="@color/colorPrimaryDark"
     tools:context="com.example.mjav2.porject2.MainActivity">
 
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        tools:layout_editor_absoluteX="8dp"
-        tools:layout_editor_absoluteY="8dp">
 
-        <ImageView
-            android:id="@+id/imageView"
+    <!-- Empty layout (0x0 dp) centered horizontally -->
+    <Space android:id="@+id/dummy"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible"/>
+
+    <TextView
+        android:id="@+id/coords_static"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/dummy"
+        android:layout_below="@+id/msuLogo"
+        android:text="Coordinates:"
+        android:textAlignment="viewEnd"
+        android:textColor="@android:color/black"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/hall_static"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/msuLogo"
+        android:layout_below="@+id/msuLogo"
+        android:text="Closest Hall:"
+        android:textAlignment="viewStart"
+        android:textColor="@android:color/black"
+        android:textSize="20sp" />
+
+    <ImageView
+        android:id="@+id/msuLogo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="8dp"
+        app:srcCompat="@drawable/msulogo" />
+
+    <TextView
+        android:id="@+id/hall_dynamic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/hall_static"
+        android:layout_below="@+id/hall_static"
+        android:layout_margin="8dp"
+        android:textAlignment="viewStart"
+        android:textColor="@android:color/black"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/coords_dynamic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/hall_dynamic"
+        android:layout_alignBottom="@+id/hall_dynamic"
+        android:layout_toRightOf="@id/dummy"
+        android:layout_margin="8dp"
+        android:textAlignment="viewEnd"
+        android:textColor="@android:color/black"
+        android:textSize="14sp" />
+
+    <RadioGroup
+        android:id="@+id/resDirections"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/hall_dynamic"
+        android:layout_alignStart="@id/msuLogo"
+        android:layout_alignEnd="@id/msuLogo"
+        android:checkedButton="@+id/northRadio"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/northRadio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:layout_margin="8dp"
-            app:srcCompat="@drawable/msulogo" />
-    </RelativeLayout>
-</android.support.constraint.ConstraintLayout>
+            android:layout_alignStart="@+id/resDirections"
+            android:layout_alignTop="@+id/resDirections"
+            android:layout_weight="1"
+            android:onClick="onClick"
+            android:text="North/A/East"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/southRadio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onClick"
+            android:text="South/B/West"
+            android:textSize="14sp" />
+
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/wash"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/hall_static"
+        android:layout_below="@+id/resDirections"
+        android:layout_marginTop="24dp"
+        android:text="Washers:"
+        android:textSize="20sp"
+        android:textColor="@android:color/black" />
+
+    <TextView
+        android:id="@+id/dry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/wash"
+        android:layout_alignBottom="@+id/wash"
+        android:layout_toRightOf="@id/dummy"
+        android:text="Dryers:"
+        android:textSize="20sp"
+        android:textColor="@android:color/black" />
+
+</RelativeLayout>
