@@ -1,4 +1,4 @@
-package com.example.mjav2.porject2;
+package com.example.mjav2.project2;
 
 import android.Manifest;
 import android.content.Context;
