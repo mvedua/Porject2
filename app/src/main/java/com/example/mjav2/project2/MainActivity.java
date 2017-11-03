@@ -152,6 +152,18 @@ public class MainActivity extends AppCompatActivity {
     } // onCreate
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        startGPS();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        locationManager.removeUpdates(locationListener);
+    }
+
+    @Override
     // Callback to see if user granted permissions
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode){
