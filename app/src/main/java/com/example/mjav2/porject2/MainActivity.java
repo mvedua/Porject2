@@ -10,6 +10,7 @@ import android.graphics.Typeface;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -17,21 +18,31 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.SpannableStringBuilder;
 import android.view.View;
+import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class MainActivity extends AppCompatActivity {
 
+    private String url, id;
     private RadioGroup resHallDirections;
     private RadioButton northRadio, southRadio;
-    private TextView coordsTitle, usrHallTitle, coordinates, usrHall, wash, dry;
+    private TextView coordsTitle, usrHallTitle, coordinates, usrHall, wash, dry, washerInfo, dryerInfo;
+    private Button checkSite;
     private LocationManager locationManager;
     private LocationListener locationListener;
     private Location loc;
@@ -44,8 +55,6 @@ public class MainActivity extends AppCompatActivity {
     public static final String ClosestResHallKey = "reshallkey";
 
     SharedPreferences sharedPreferences;
-
-    String url =  "http://msu.esuds.net/RoomStatus/showRoomStatus.i?locationId=1019834"; // East Wilson
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
             String c = String.format("%.4f", latLong[0]) + ", " + String.format("%.4f", latLong[1]);
             coordinates.setText(c);
             usrHall.setText(closestHall(latLong));
+            updateViews();
+            getWebsite();
         }
 
         locationListener = new LocationListener() {
@@ -71,10 +82,11 @@ public class MainActivity extends AppCompatActivity {
             // Updates location of the user and sets the coordinates and closestHall TextView
             // Saves the closest hall, latitude, and longitude to SharedPrefs as Strings
             public void onLocationChanged(Location location) {
-                Toast.makeText(getApplicationContext(), "Location Updated...", Toast.LENGTH_SHORT).show();
                 loc = location;
+                latLong = new double[]{loc.getLatitude(), loc.getLongitude()};
 
                 updateViews();
+                getWebsite();
 
                 editor.putString(ClosestResHallKey, closestHall(new double[]{loc.getLatitude(), loc.getLongitude()}));
                 editor.putString(LatKey, String.valueOf(location.getLatitude()));
@@ -97,6 +109,34 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+        resHallDirections.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                String buttonText="";
+                switch(checkedId){
+                    case R.id.northRadio:
+                        buttonText = northRadio.getText().toString();
+                        break;
+                    case R.id.southRadio:
+                        buttonText = southRadio.getText().toString();
+                        break;
+                }
+                id = locationId.get(buttonText + " " + closestHall(latLong))[1];
+                url =  "http://msu.esuds.net/RoomStatus/machineStatus.i?bottomLocationId=" + id;
+                getWebsite();
+            }
+        });
+
+        checkSite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String esuds = "http://msu.esuds.net/RoomStatus/showRoomStatus.i?locationId=" + id;
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(esuds));
+                startActivity(i);
+            }
+        });
+
         // Checks if Android Version > 6.0 to see if it needs runtime permissions
         // Starts location if it is less than Android 6.0, asks for permissions if greater than
         // If permission is granted, then it also automatically starts Locations Services
@@ -110,7 +150,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     } // onCreate
-
 
     @Override
     // Callback to see if user granted permissions
@@ -149,18 +188,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startGPS() {
-        Toast.makeText(getApplicationContext(), "Starting Location Updates.", Toast.LENGTH_LONG).show();
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 5, locationListener);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 5, locationListener);
-    }
-
-    public void onClick(View view){
-        switch (view.getId()){
-            case R.id.northRadio:
-                break;
-            case R.id.southRadio:
-                break;
-        }
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 120000, 20, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 120000, 20, locationListener);
     }
 
     private Map<String, double[]> addResHalls(){
@@ -273,6 +302,11 @@ public class MainActivity extends AppCompatActivity {
         southRadio = (RadioButton) findViewById(R.id.southRadio);
         wash = (TextView) findViewById(R.id.wash);
         dry = (TextView) findViewById(R.id.dry);
+        northRadio = (RadioButton)findViewById(R.id.northRadio);
+        southRadio = (RadioButton)findViewById(R.id.southRadio);
+        washerInfo = (TextView)findViewById(R.id.washerInfo);
+        dryerInfo = (TextView)findViewById(R.id.dryerInfo);
+        checkSite = (Button)findViewById(R.id.toWebsite);
 
         Typeface gotham = Typeface.createFromAsset(getAssets(), "fonts/GothamUltra.otf");
 
@@ -284,38 +318,96 @@ public class MainActivity extends AppCompatActivity {
         southRadio.setTypeface(gotham);
         wash.setTypeface(gotham);
         dry.setTypeface(gotham);
+        washerInfo.setTypeface(gotham);
+        dryerInfo.setTypeface(gotham);
+        checkSite.setTypeface(gotham);
 
         resHallDirections.setVisibility(View.VISIBLE);
     }
 
     // Updates Views at launch and whenever location is changed
     private void updateViews(){
-        if(loc != null){
-            latLong = new double[] {loc.getLatitude(), loc.getLongitude()};
-            String c = String.format("%.4f", latLong[0]) + ", " + String.format("%.4f", latLong[1]);
-            coordinates.setText(c);
-            usrHall.setText(closestHall(latLong));
+        if(loc != null) {
+            latLong = new double[]{loc.getLatitude(), loc.getLongitude()};
+        }
+        String c = String.format("%.4f", latLong[0]) + ", " + String.format("%.4f", latLong[1]);
+        coordinates.setText(c);
+        usrHall.setText(closestHall(latLong));
 
-            if ( (res_halls.get(closestHall(latLong)))[2] == 3 ) {
-                resHallDirections.setVisibility(View.INVISIBLE);
-            } else {
-                resHallDirections.setVisibility(View.VISIBLE);
-                switch ( (int)((res_halls.get(closestHall(latLong)))[2]) ){
-                    case 0:
-                        northRadio.setText("North");
-                        southRadio.setText("South");
-                        break;
-                    case 1:
-                        northRadio.setText("East");
-                        southRadio.setText("West");
-                        break;
-                    case 2:
-                        northRadio.setText("A");
-                        southRadio.setText("B");
-                        break;
-                }
+        if ( (res_halls.get(closestHall(latLong)))[2] == 3 ) {
+            resHallDirections.setVisibility(View.INVISIBLE);
+        } else {
+            resHallDirections.setVisibility(View.VISIBLE);
+            switch ( (int)((res_halls.get(closestHall(latLong)))[2]) ){
+                case 0:
+                    northRadio.setText("North");
+                    southRadio.setText("South");
+                    break;
+                case 1:
+                    northRadio.setText("East");
+                    southRadio.setText("West");
+                    break;
+                case 2:
+                    northRadio.setText("A");
+                    southRadio.setText("B");
+                    break;
+                case 3:
+                    northRadio.setText("");
+                    southRadio.setText("");
+                    break;
             }
         }
+
+        int radioButtonID = resHallDirections.getCheckedRadioButtonId();
+        View radioButton =  resHallDirections.findViewById(radioButtonID);
+        int idx = resHallDirections.indexOfChild(radioButton);
+        RadioButton r = (RadioButton)  resHallDirections.getChildAt(idx);
+        String radioText = r.getText().toString();
+        id = locationId.get(radioText + " " + closestHall(latLong))[1];
+        url =  "http://msu.esuds.net/RoomStatus/machineStatus.i?bottomLocationId=" + id;
+    }
+
+    private void getWebsite(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                                final SpannableStringBuilder washerBuilder = new SpannableStringBuilder();
+                final StringBuilder dryerBuilder = new StringBuilder();
+                try {
+                    Document doc = Jsoup.connect(url)
+                            .userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0")
+                            .post();
+                    for (Element table : doc.select("table.room_status")) {
+                        for (Element row : table.select("tr")) {
+                            Elements tds = row.select("td");
+                            if (tds.size() > 3) {
+                                String number = tds.get(1).text();
+                                String dryerOrWasher = tds.get(2).text();
+                                String available = tds.get(3).text();
+
+                                if(dryerOrWasher.equals("Washer")){
+                                    String s = "#" + number + ": "  + available + "\n";
+                                    washerBuilder.append(s);
+                                } else {
+                                    String s = "#" + number + ": "  + available + "\n";
+                                    dryerBuilder.append(s);
+                                }
+                            }
+                        }
+                    }
+                } catch (IOException e){
+                    dryerBuilder.append("Error: ").append(e.getMessage()).append("\n");
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        washerInfo.setText(washerBuilder.toString());
+                        dryerInfo.setText(dryerBuilder.toString());
+                    }
+                });
+            }
+        }).start();
 
     }
 }

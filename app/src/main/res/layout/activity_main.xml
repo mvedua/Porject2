@@ -3,25 +3,26 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
 
+    android:layout_height="match_parent"
     android:background="@color/colorPrimaryDark"
     tools:context="com.example.mjav2.porject2.MainActivity">
 
 
     <!-- Empty layout (0x0 dp) centered horizontally -->
-    <Space android:id="@+id/dummy"
+    <Space
+        android:id="@+id/dummy"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_centerHorizontal="true"
-        android:visibility="invisible"/>
+        android:visibility="invisible" />
 
     <TextView
         android:id="@+id/coords_static"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/dummy"
         android:layout_below="@+id/msuLogo"
+        android:layout_toRightOf="@id/dummy"
         android:text="Coordinates:"
         android:textAlignment="viewEnd"
         android:textColor="@android:color/black"
@@ -63,8 +64,8 @@
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/hall_dynamic"
         android:layout_alignBottom="@+id/hall_dynamic"
-        android:layout_toRightOf="@id/dummy"
         android:layout_margin="8dp"
+        android:layout_toRightOf="@id/dummy"
         android:textAlignment="viewEnd"
         android:textColor="@android:color/black"
         android:textSize="14sp" />
@@ -73,9 +74,9 @@
         android:id="@+id/resDirections"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/hall_dynamic"
-        android:layout_alignStart="@id/msuLogo"
         android:layout_alignEnd="@id/msuLogo"
+        android:layout_alignStart="@id/msuLogo"
+        android:layout_below="@id/hall_dynamic"
         android:checkedButton="@+id/northRadio"
         android:orientation="horizontal">
 
@@ -86,8 +87,6 @@
             android:layout_alignStart="@+id/resDirections"
             android:layout_alignTop="@+id/resDirections"
             android:layout_weight="1"
-            android:onClick="onClick"
-            android:text="North/A/East"
             android:textSize="14sp" />
 
         <RadioButton
@@ -95,8 +94,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:onClick="onClick"
-            android:text="South/B/West"
             android:textSize="14sp" />
 
     </RadioGroup>
@@ -107,10 +104,10 @@
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/hall_static"
         android:layout_below="@+id/resDirections"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="16dp"
         android:text="Washers:"
-        android:textSize="20sp"
-        android:textColor="@android:color/black" />
+        android:textColor="@android:color/black"
+        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/dry"
@@ -120,7 +117,39 @@
         android:layout_alignBottom="@+id/wash"
         android:layout_toRightOf="@id/dummy"
         android:text="Dryers:"
-        android:textSize="20sp"
+        android:textColor="@android:color/black"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/washerInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/hall_dynamic"
+        android:layout_below="@+id/wash"
+        android:layout_marginTop="4dp"
+        android:maxLines="1000"
+        android:scrollbars="vertical"
         android:textColor="@android:color/black" />
+
+    <TextView
+        android:id="@+id/dryerInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/washerInfo"
+        android:layout_alignBottom="@+id/washerInfo"
+        android:layout_alignStart="@+id/coords_dynamic"
+        android:textColor="@android:color/black" />
+
+    <Button
+        android:id="@+id/toWebsite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="32dp"
+        android:text="   Check The eSuds Website   "
+        android:background="@drawable/button_background"
+        android:textAllCaps="false"/>
+
 
 </RelativeLayout>
